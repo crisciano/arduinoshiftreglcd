@@ -34,4 +34,5 @@ If anyone wants to know, this is how I connected my LCD. (I know I should probab
 Sorry for my lack of electronics CAD, so this drawing have to do for now.
 
 http://i557.photobucket.com/albums/ss11/rar0n/Electronics/Arduino/ShiftRegLCD-2.jpg
+
 (I know I mixed block schematics with pinout for the 74xx164)
