@@ -1,29 +1,46 @@
 // ShiftRegLCD  - Shiftregister-based LCD library for Arduino
 //
-// Connects an LCD using 3 pins from the Arduino, via an 8-bit shiftregister.
+// Connects an LCD using 2 or 3 pins from the Arduino, via an 8-bit ShiftRegister (SR from now on).
 //
-// Based very much on the "official" ShiftRegLCD library for the Arduino (http://arduino.cc/en/Reference/Libraries)
-//   and also the improved version (with example CustomChar1) from LadyAda:
-//   (http://web.alfredstate.edu/weimandn/arduino/ShiftRegLCD_library/ShiftRegLCD_index.html)
+// Acknowledgements:
+//
+// Based very much on the "official" LiquidCrystal library for the Arduino:
+//     ttp://arduino.cc/en/Reference/Libraries
+// and also the improved version (with examples CustomChar1 and SerialDisplay) from LadyAda:
+//     http://web.alfredstate.edu/weimandn/arduino/LiquidCrystal_library/LiquidCrystal_index.html
+// and also inspired by this schematics from an unknown author (thanks to mircho on the arduino playground forum!):
+//     http://www.scienceprog.com/interfacing-lcd-to-atmega-using-two-wires/
 //
 // Modified to work serially with the shiftOut() function, an 8-bit shiftregister (SR) and an LCD in 4-bit mode.
 //
-// Bits #7 - #4 from SR connects to LCD d7 - d4.
-// Bit  #3      from SR connects to RS (register select). There are 3 unused (wasted) bits in the SR.
-// 3 Pins required from the Arduino for Data, Clock, and Enable.
-// Only "Enable" connects directly to the LCD, data and clock to SR.
-// LCD RW-pin hardwired to LOW (only writing to LCD). Busy Flag (BF / data bit D7) is not used.
+// Shiftregister connection description (NEW as of 2007.07.27)
+//
+// Bit  #0 - N/C - not connected, used to hold a zero
+// Bits #1 - N/C
+// Bit  #2 - connects to RS (Register Select) on the LCD
+// Bits #3 - #6 from SR connects to LCD data inputs D4 - D7.
+// Bit  #7 - is used to enabling the enable-puls (via a diode-resistor AND "gate")
+//
+// 2 or 3 Pins required from the Arduino for Data, Clock, and Enable (optional). If not using Enable,
+// the Data pin is used for the enable signal by defining the same pin for Enable as for Data.
+// Data and Clock outputs/pins goes to the shiftregister.
+// LCD RW-pin hardwired to LOW (only writing to LCD). Busy Flag (BF, data bit D7) is not read.
 //
 // Any shift register should do. I used 74LS164, for the reason that's what I had at hand.
-//       Project homepage: http://code.google.com/p/arduinoshiftreglcd/
 //
+//       Project homepage: http://code.google.com/p/arduinoshiftreglcd/
 //
 // History
 // 2009.05.23  raron, but; based mostly (as in almost verbatim) on the "official" ShiftRegLCD library.
 // 2009.07.23  raron (yes exactly 2 months later). Incorporated some proper initialization routines
-//               inspired (lets say copy-paste-tweaked) from ShiftRegLCD library improvements from LadyAda:
-//                 http://web.alfredstate.edu/weimandn/arduino/ShiftRegLCD_library/ShiftRegLCD_index.html
+//               inspired (lets say copy-paste-tweaked) from LiquidCrystal library improvements from LadyAda
 //               Also a little re-read of the datasheet for the HD44780 LCD controller.
+// 2009.07.25  raron - Fixed comments. I really messed up the comments before posting this, so I had to fix it.
+//               Also renamed a function, but no improvements or functional changes.
+// 2009.07.27  Thanks to an excellent suggestion from mircho at the Arduiono playgrond forum,
+//               the number of wires now required is only two!
+// 2009.07.28  Mircho / raron - a new modification to the schematics, and a more streamlined interface
+
 
 #include "ShiftRegLCD.h"
 #include <stdio.h>
@@ -31,19 +48,7 @@
 #include <inttypes.h>
 #include "WProgram.h"
 
-#define fastWrite(_pin_, _state_) ( _pin_ < 8 ? (_state_ ?  PORTD |= 1 << _pin_ : PORTD &= ~(1 << _pin_ )) : (_state_ ?  PORTB |= 1 << (_pin_ -8) : PORTB &= ~(1 << (_pin_ -8)  )))
-
-void shiftOutZero( uint8_t dataPin, uint8_t clockPin, uint8_t bits=8 )
-{
-	fastWrite( dataPin, LOW );
-	for( uint8_t cnt = 0; cnt < 8; cnt ++ )
-	{
-		fastWrite( clockPin, HIGH );
-		fastWrite( clockPin, LOW );
-	}
-}
-
-// assume 1 line 8 pixel high font
+// Assuming 1 line 8 pixel high font
 ShiftRegLCD::ShiftRegLCD(uint8_t srdata, uint8_t srclock, uint8_t enable) {
 	init(srdata, srclock, enable, 1, 0);
 }
@@ -59,16 +64,16 @@ ShiftRegLCD::ShiftRegLCD(uint8_t srdata, uint8_t srclock, uint8_t enable, uint8_
 
 void ShiftRegLCD::init(uint8_t srdata, uint8_t srclock, uint8_t enable, uint8_t lines, uint8_t font)
 {
-  _srdata_pin = srdata; _srclock_pin = srclock; _enable_pin = enable == 100 ? srdata : enable;
+  _two_wire = 0;
+  _srdata_pin = srdata; _srclock_pin = srclock; _enable_pin = enable;
+  if (enable == TWO_WIRE)
+  {
+	_enable_pin = _srdata_pin;
+	_two_wire = 1;
+  }
   pinMode(_srclock_pin, OUTPUT);
   pinMode(_srdata_pin, OUTPUT);
   pinMode(_enable_pin, OUTPUT);
-
-  digitalWrite(_enable_pin, LOW);
-  digitalWrite(_srdata_pin, LOW);
-  digitalWrite(_srclock_pin, LOW);
-
-  shiftOutZero ( _srdata_pin, _srclock_pin );
 
   if (lines>1)
   	_numlines = LCD_2LINE;
@@ -77,47 +82,46 @@ void ShiftRegLCD::init(uint8_t srdata, uint8_t srclock, uint8_t enable, uint8_t 
 
   _displayfunction = LCD_4BITMODE | _numlines;
 
-  // for some displays you can select a 10 pixel high font
-  if (font != 0) {
-  _displayfunction |= LCD_5x10DOTS; }
-  else {
+  // For some displays you can select a 10 pixel high font
+  // (Just in case I removed the neccesity to have 1-line display for that)
+  if (font != 0)
+    _displayfunction |= LCD_5x10DOTS;
+  else
     _displayfunction |= LCD_5x8DOTS;
-  }
 
-  // AT THIS TIME THIS IS FOR 4-BIT MODE ONLY
-  // SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
-  // according to datasheet, we need at least 40ms after power rises above 2.7V
+  // At this time this is for 4-bit mode only, as described above.
+  // Page 47-ish of this (HD44780 LCD) datasheet:
+  //    http://www.datasheetarchive.com/pdf-datasheets/Datasheets-13/DSA-247674.pdf
+  // According to datasheet, we need at least 40ms after power rises above 2.7V
   // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
   delayMicroseconds(50000);
-  send4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
+  init4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
   delayMicroseconds(4500);  // wait more than 4.1ms
-  // second try
-  send4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
+  // Second try
+  init4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
   delayMicroseconds(150);
-  // third go
-  send4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
+  // Third go
+  init4bits(LCD_FUNCTIONSET | LCD_8BITMODE);
 
-  // finally, set to 4-bit interface
-  send4bits(LCD_FUNCTIONSET | LCD_4BITMODE);
+  // And finally, set to 4-bit interface
+  init4bits(LCD_FUNCTIONSET | LCD_4BITMODE);
 
-  // finally, set # lines, font size, etc.
+  // Set # lines, font size, etc.
   command(LCD_FUNCTIONSET | _displayfunction);
-  // turn the display on with no cursor or blinking default
+  // Turn the display on with no cursor or blinking default
   _displaycontrol = LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF;
   display();
-  // clear it off
+  // Clear it off
   clear();
   // Initialize to default text direction (for romance languages)
   _displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
   // set the entry mode
   command(LCD_ENTRYMODESET | _displaymode);
-
   home();
-
 }
 
 
-/********** high level commands, for the user! */
+// ********** high level commands, for the user! **********
 void ShiftRegLCD::clear()
 {
   command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
@@ -133,10 +137,8 @@ void ShiftRegLCD::home()
 void ShiftRegLCD::setCursor(uint8_t col, uint8_t row)
 {
   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
-  if ( row > _numlines ) {
+  if ( row > _numlines )
     row = _numlines-1;    // we count rows starting w/0
-  }
-
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
 
@@ -209,9 +211,10 @@ void ShiftRegLCD::createChar(uint8_t location, uint8_t charmap[]) {
   for (int i=0; i<8; i++) {
     write(charmap[i]);
   }
-  command(LCD_SETDDRAMADDR); // Reset function to normal display
+  command(LCD_SETDDRAMADDR); // Reset display to display text (from pos. 0)
 }
 
+// ********************
 
 void ShiftRegLCD::command(uint8_t value) {
   send(value, LOW);
@@ -221,32 +224,35 @@ void ShiftRegLCD::write(uint8_t value) {
   send(value, HIGH);
 }
 
+// For sending data via the shiftregister
 void ShiftRegLCD::send(uint8_t value, uint8_t mode) {
   uint8_t val1, val2;
+  if ( _two_wire ) shiftOut ( _srdata_pin, _srclock_pin, MSBFIRST, 0x00 ); // clear shiftregister
+  digitalWrite( _enable_pin, LOW );
   mode = mode ? SR_RS_BIT : 0; // RS bit; LOW: command.  HIGH: character.
-  val1 = SR_ENABLE_BIT | mode | ((value >> 2) & 0x3C); // upper nibble
-  val2 = SR_ENABLE_BIT | mode | ((value << 2) & 0x3C); // lower nibble
-
-  digitalWrite(_srdata_pin, LOW);
-  shiftOutZero ( _srdata_pin, _srclock_pin, 6 );
+  val1 = mode | SR_EN_BIT | ((value >> 1) & 0x78); // upper nibble
+  val2 = mode | SR_EN_BIT | ((value << 3) & 0x78); // lower nibble
   shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, val1);
-  digitalWrite(_srdata_pin, HIGH);
+  digitalWrite(_enable_pin, HIGH);
   delayMicroseconds(1);                 // enable pulse must be >450ns
-  digitalWrite(_srdata_pin, LOW);
-  shiftOutZero ( _srdata_pin, _srclock_pin, 6 );
+  digitalWrite(_enable_pin, LOW);
+  if ( _two_wire ) shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, 0x00); // clear shiftregister
   shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, val2);
   digitalWrite(_enable_pin, HIGH);
   delayMicroseconds(1);                 // enable pulse must be >450ns
   digitalWrite(_enable_pin, LOW);
+  delayMicroseconds(10);               // commands need > 37us to settle
 }
 
-void ShiftRegLCD::send4bits(uint8_t value) {
-  digitalWrite(_srdata_pin, LOW);
-  shiftOutZero ( _srdata_pin, _srclock_pin, 6 );
-  value = ((value >> 2) & 0x3C);
-  shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, value | SR_ENABLE_BIT);
-  delayMicroseconds(1);                 // enable pulse must be >450ns
+// For sending data when initializing the display to 4-bit
+void ShiftRegLCD::init4bits(uint8_t value) {
+  uint8_t val1;
+  if ( _two_wire ) shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, 0x00); // clear shiftregister
+  digitalWrite(_enable_pin, LOW);
+  val1 = SR_EN_BIT | ((value >> 1) & 0x78);
+  shiftOut (_srdata_pin, _srclock_pin, MSBFIRST, val1);
   digitalWrite(_enable_pin, HIGH);
   delayMicroseconds(1);                 // enable pulse must be >450ns
   digitalWrite(_enable_pin, LOW);
+  delayMicroseconds(10);               // commands need > 37us to settle
 }
