@@ -42,10 +42,11 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-//shift register enable bit
-#define ENABLE_AS_DATA 100
-#define SR_RS_BIT 0x40
-#define SR_ENABLE_BIT 0x80
+// two-wire indicator constant
+#define TWO_WIRE 204
+#define SR_RS_BIT 0x04
+#define SR_EN_BIT 0x80
+
 
 class ShiftRegLCD : public Print {
 public:
@@ -77,10 +78,11 @@ public:
 private:
   void init(uint8_t srdata, uint8_t srclock, uint8_t enable, uint8_t lines, uint8_t font);
   void send(uint8_t, uint8_t);
-  void send4bits(uint8_t);
+  void init4bits(uint8_t);
   uint8_t _srdata_pin;
   uint8_t _srclock_pin;
-  uint8_t _enable_pin; // activated by a HIGH pulse.
+  uint8_t _enable_pin;
+  uint8_t _two_wire;
 
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
