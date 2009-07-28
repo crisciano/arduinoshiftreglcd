@@ -14,7 +14,7 @@
  
 #include <ShiftRegLCD.h>
 
-ShiftRegLCD srlcd(2, 3, ENABLE_AS_DATA, 2); // no specification of Lines or Font neccesary (but optional)
+ShiftRegLCD srlcd(11, 12, TWO_WIRE, 2); // no specification of Lines or Font neccesary (but optional)
 
 void setup()
 {
@@ -25,22 +25,44 @@ void setup()
 }
 
 uint8_t toggle = 0;
+uint8_t timetotoggle = 0;
+uint32_t counter = 0;
+uint32_t seconds = 0;
 void loop()
 {
-  toggle = toggle ^ 1;
-  if( toggle == 0 )
+  if( counter == 0 )
   {
-   digitalWrite( 13, HIGH );
-   srlcd.clear();
-   srlcd.setCursor(0,0);
-   srlcd.print("SLON");
+    toggle = toggle ^ 1;
+    seconds++;
+    
+    timetotoggle = 1;
   }
-  else
+
+  if( timetotoggle )
+  {  
+    if( toggle == 0 )
+    {
+     digitalWrite( 13, HIGH );
+     srlcd.setCursor(0,0);
+     srlcd.print("SLON    ");
+    }
+    else
+    {
+     digitalWrite( 13, LOW );
+     srlcd.setCursor(0,0);
+     srlcd.print("KROKODIL");
+    }
+
+    srlcd.setCursor( 0, 1 );
+    srlcd.print( seconds );
+    
+    timetotoggle = 0;
+  }
+
+  counter++;
+  if( counter > 1000000 )
   {
-   digitalWrite( 13, LOW );
-   srlcd.clear();
-   srlcd.setCursor(0,1);
-   srlcd.print("KROKODIL");
+    counter = counter % 2000000;
   }
-  delay( 2000 );
+  delayMicroseconds( 1 );
 } 
