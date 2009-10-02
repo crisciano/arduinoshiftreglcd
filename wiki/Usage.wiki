@@ -16,9 +16,13 @@ Of course you can name the object what you want.
 == Initialization ==
 
 {{{
-#include <ShiftRegLCD.h>
+#include <ShiftRegLCD.h>`
 ShiftRegLCD objectName(Datapin, Clockpin, Enablepin or TWO_WIRE [, Lines [, Font]])
 }}}
+  where Lines and Font are optional.
+ * Enablepin: can be replaced by constant TWO_WIRE, if using only 2 wires.
+ * Lines: 1 or 2 lines (or more if possible)
+ * Font : 0 or 1, small or big font (8 or 10 pixel tall font, if available).
 
 
 === Examples ===
