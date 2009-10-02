@@ -39,7 +39,7 @@ Using two wires, 1-line display with a big (10 pixel high) font (which according
 
 {{{
 #include <ShiftRegLCD.h>
-ShiftRegLCD srlcd(12, 13, TWO_WIRE, 1,0 );
+ShiftRegLCD srlcd(12, 13, TWO_WIRE, 1,1 );
 }}}
 
 
