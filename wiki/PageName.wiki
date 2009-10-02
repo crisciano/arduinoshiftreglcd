@@ -1,4 +1,4 @@
-#Functions
+#summary Usage of the functions or methods.
 = Functions =
 
 This list of functions, or methods, of the library can basically be obtained by looking at the ShiftRegLCD.cpp.
