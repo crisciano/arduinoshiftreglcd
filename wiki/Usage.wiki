@@ -1,5 +1,5 @@
 #summary Usage of the functions or methods.
-= Functions =
+= Usage =
 
 This list of functions (or methods) of the library can basically be obtained by looking at the ShiftRegLCD.cpp.
 
@@ -10,8 +10,6 @@ The examples is for the object named srlcd, created with
 Of course you can name the object what you want.
 
 
-
-= Usage =
 
 == Initialization ==
 
@@ -52,6 +50,7 @@ ShiftRegLCD srlcd(12, 13, 8, 2);
 
 
 
+= Functions =
 
 ==  Clear display ==
 {{{
