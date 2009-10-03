@@ -6,6 +6,16 @@ This list of functions (or methods) of the library can basically be obtained by 
 The examples is for an object named `srlcd`. Of course you can name the object whatever you want. Or even have more than one.
 
 
+== Installing ==
+
+- Download the most current version of the library
+- Unrar (extract) the ShiftRegLCD folder, and all its contents into a subfolder in the Arduino environment. It must be in this folder (xxxx is the Arduino version):
+
+`arduino-xxxx\hardware\libraries\ShiftRegLCD`
+
+Then, when you start the Arduino IDE, it should contain a new menu "ShiftRegLCD" with examples.
+
+
 == Initialization ==
 
 {{{
