@@ -23,7 +23,7 @@ ShiftRegLCD srlcd(Datapin, Clockpin, Enablepin or TWO_WIRE [, Lines [, Font]])
 }}}
   where Lines and Font are optional.
  * Enablepin: can be replaced by constant TWO_WIRE, if using only 2 wires.
- * Lines: 1 or 2 lines (also 4-line LCD's must be set as two - use the setCursor method).
+ * Lines: 1 or 2 lines (also 4-line LCD's must be set as 2 - use the setCursor method to access the lines (rows)).
  * Font : 0 or 1, small or big font (8 or 10 pixel tall font, if available).
 
 
