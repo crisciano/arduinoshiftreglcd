@@ -109,19 +109,19 @@ srlcd.scrollDisplayRight();
 
 == Text flow direction ==
 {{{
-srlcd.shiftLeft(void);  //  This is for text that flows Left to Right
+srlcd.shiftLeft();  //  This is for text that flows Left to Right
 }}}
 {{{
-srlcd.shiftRight(void); // This is for text that flows Right to Left
+srlcd.shiftRight(); // This is for text that flows Right to Left
 }}}
 
 
 == Text justification ==
 {{{
-srlcd.shiftIncrement(void); // This will 'right justify' text from the cursor
+srlcd.shiftIncrement(); // This will 'right justify' text from the cursor
 }}}
 {{{
-srlcd.shiftDecrement(void); // This will 'left justify' text from the cursor
+srlcd.shiftDecrement(); // This will 'left justify' text from the cursor
 }}}
 
 
