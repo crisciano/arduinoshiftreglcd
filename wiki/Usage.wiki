@@ -3,23 +3,18 @@
 
 This list of functions (or methods) of the library can basically be obtained by looking at the ShiftRegLCD.cpp.
 
-The examples is for the object named srlcd, created with
-
-`ShiftRegLCD srlcd(Data, Cloc, Enable or the constant TWO_WIRE);`
-
-Of course you can name the object what you want.
-
+The examples is for an object named `srlcd`. Of course you can name the object whatever you want. Or even have more than one.
 
 
 == Initialization ==
 
 {{{
 #include <ShiftRegLCD.h>
-ShiftRegLCD objectName(Datapin, Clockpin, Enablepin or TWO_WIRE [, Lines [, Font]])
+ShiftRegLCD srlcd(Datapin, Clockpin, Enablepin or TWO_WIRE [, Lines [, Font]])
 }}}
   where Lines and Font are optional.
  * Enablepin: can be replaced by constant TWO_WIRE, if using only 2 wires.
- * Lines: 1 or 2 lines.
+ * Lines: 1 or 2 lines (also 4-line LCD's must be set as two - use the setCursor method).
  * Font : 0 or 1, small or big font (8 or 10 pixel tall font, if available).
 
 
