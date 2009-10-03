@@ -81,25 +81,24 @@ srlcd.display();   // Turn the display on
 }}}
 
 
-== Turns the underline cursor on/off ==
+== Cursor types ==
 {{{
-srlcd.noCursor(); //Turns the underline cursor off
+srlcd.noCursor();//Turns the underline cursor off
 }}}
 {{{
-srlcd.cursor();   // Turns the underline cursor on
+srlcd.cursor();  // Turns the underline cursor on
 }}}
 
-
-== Turn the blinking cursor on/off  ==
 {{{
-srlcd.noBlink();
+srlcd.noBlink(); // Turn the blinking cursor off
 }}}
 {{{
-srlcd.blink();
+srlcd.blink();   // Turn the blinking cursor on
 }}}
 
 
-== These commands scroll the display without changing the display RAM ==
+== Scrolling ==
+These commands scroll the display without changing the display RAM
 {{{
 srlcd.scrollDisplayLeft();
 }}}
