@@ -8,8 +8,8 @@ The examples is for an object named `srlcd`. Of course you can name the object w
 
 == Installing ==
 
-- Download the most current version of the library
-- Unrar (extract) the ShiftRegLCD folder, and all its contents into a subfolder in the Arduino environment. It must be in this folder (xxxx is the Arduino version):
+ * Download the most current version of the library
+ * Unrar (extract) the ShiftRegLCD folder, and all its contents into a subfolder in the Arduino environment. It must be in this folder (xxxx is the Arduino version):
 
 `arduino-xxxx\hardware\libraries\ShiftRegLCD`
 
