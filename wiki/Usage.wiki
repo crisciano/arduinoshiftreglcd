@@ -101,10 +101,10 @@ srlcd.blink();
 
 == These commands scroll the display without changing the display RAM ==
 {{{
-srlcd.scrollDisplayLeft(void);
+srlcd.scrollDisplayLeft();
 }}}
 {{{
-srlcd.scrollDisplayRight(void);
+srlcd.scrollDisplayRight();
 }}}
 
 
