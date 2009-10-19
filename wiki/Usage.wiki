@@ -136,13 +136,13 @@ Where `location` is a number from 0 to 7, and `charmap[]` is an 8 element byte a
 For example, to make a bell character at character position 3:
 
 {{{
-uint8_t bell[8]  = { 00000100B,
-                     00001110B,
-                     00001110B,
-                     00001110B,
-                     00011111B,
-                     00000000B,
-                     00000100B};
+uint8_t bell[8]  = { B00000100,
+                     B00001110,
+                     B00001110,
+                     B00001110,
+                     B00011111,
+                     B00000000,
+                     B00000100 };
 
 srlcd.createChar(3, bell);
 }}}
