@@ -64,6 +64,18 @@ ShiftRegLCD srlcd(12, 13, 8, 2);
 
 = Functions =
 
+== Backlight ==
+Formerly unused shift register bit #1 (or bit#0 if using Bill's method), can now be used to control backlight on/off.
+
+{{{
+srlcd.backlightOn(); // Turn backlight on
+}}}
+
+{{{
+srlcd.backlightOff(); // Turn backlight off
+}}}
+
+
 ==  Clear display ==
 {{{
 srlcd.clear(); // Clear display, set cursor position to zero
