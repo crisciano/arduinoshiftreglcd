@@ -1,4 +1,8 @@
 #summary Usage of the functions or methods.
+#labels Featured
+
+<wiki:toc max_depth="2" />
+
 = Usage =
 
 This list of functions (or methods) of the library can basically be obtained by looking at the ShiftRegLCD.cpp.
