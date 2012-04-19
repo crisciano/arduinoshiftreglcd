@@ -161,7 +161,7 @@ srlcd.createChar(uint8_t location, uint8_t charmap[])
 }}}
 Where `location` is a number from 0 to 7, and `charmap[]` is an 8 element byte array of a character pattern. Beware the characters are only 5 pixels wide, so the 3 upper bits must always be zero.
 
-For example, to make a bell character at character position 3:
+For example, to make a bell character as custom character nr. 3:
 
 {{{
 uint8_t bell[8]  = { B00000100,
